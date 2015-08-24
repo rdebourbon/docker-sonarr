@@ -1,10 +1,7 @@
-FROM debian:wheezy
-MAINTAINER tuxeh <sirtuxeh@gmail.com>
+FROM rdebourbon/base:latest
+MAINTAINER rdebourbon@xpandata.net
 
-# mono 3.10 currently doesn't install in debian jessie due to libpeg8 being removed.
-
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
-  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA5DFFC \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA5DFFC \
   && echo "deb http://apt.sonarr.tv/ master main" | tee -a /etc/apt/sources.list \
   && apt-get update -q \
   && apt-get install -qy nzbdrone mediainfo \
