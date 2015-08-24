@@ -1,31 +1,37 @@
-FROM rdebourbon/base:latest
+FROM rdebourbon/docker-base:latest
 MAINTAINER rdebourbon@xpandata.net
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA5DFFC \
-  && echo "deb http://apt.sonarr.tv/ master main" | tee -a /etc/apt/sources.list \
-  && apt-get update -q \
-  && apt-get install -qy nzbdrone mediainfo \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# add our user and group first to make sure their IDs get assigned regardless of what other dependencies may get added.
+RUN groupadd -r librarian && useradd -r -g librarian librarian
 
-RUN chown -R nobody:users /opt/NzbDrone \
-  ; mkdir -p /volumes/config/sonarr /volumes/completed /volumes/media \
-  && chown -R nobody:users /volumes
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA5DFFC && \
+    echo "deb http://apt.sonarr.tv/ master main" | tee -a /etc/apt/sources.list && \
+    apt-get update -q && \
+    apt-get install -qy nzbdrone mediainfo && \
+    apt-get -y autoremove && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /tmp/* 
 
-EXPOSE 8989
-EXPOSE 9898
-VOLUME /volumes/config
-VOLUME /volumes/completed
-VOLUME /volumes/media
+RUN mkdir -p /volumes/config && \
+    mkdir -p /volumes/media && \
+    chown -R librarian:librarian /volumes && \
+    chown -R librarian:librarian /opt/NzbDrone
+
+VOLUME ["/volumes/config","/volumes/media"]
+
+EXPOSE 8989 9898
 
 ADD develop/start.sh /
 RUN chmod +x /start.sh
 
 ADD develop/sonarr-update.sh /sonarr-update.sh
 RUN chmod 755 /sonarr-update.sh \
-  && chown nobody:users /sonarr-update.sh
+  && chown librarian:librarian /sonarr-update.sh
 
-USER nobody
+USER librarian
+
 WORKDIR /opt/NzbDrone
 
 ENTRYPOINT ["/start.sh"]
