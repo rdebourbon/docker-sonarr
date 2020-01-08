@@ -5,9 +5,12 @@ MAINTAINER rdebourbon@xpandata.net
 RUN groupadd -r librarian && useradd -r -g librarian librarian
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA5DFFC && \
-    echo "deb http://apt.sonarr.tv/ master main" | tee -a /etc/apt/sources.list && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    apt install apt-transport-https && \
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && \
+    echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list && \
     apt-get update -q && \
-    apt-get install -qy nzbdrone mediainfo && \
+    apt-get install -qy libmono-cil-dev nzbdrone mediainfo && \
     apt-get -y autoremove && \
     apt-get -y clean && \
     rm -rf /var/lib/apt/lists/* && \
